@@ -196,20 +196,12 @@
 </nav>
 
 <div class="page-header">
-  <p class="eyebrow">Milestone 2 · My Bookshelf</p>
   <h1>My <span>Bookshelf</span></h1>
   <p>Books from my public Google Books bookshelf, retrieved live via the Google Books API.</p>
 </div>
 
 <main>
-
-  <div class="notice">
-    <strong>How this works:</strong> The Volume IDs below were copied from my public Google Books bookshelf.
-    Each book's full details are fetched live from the Google Books Volumes API endpoint
-    (<code>googleapis.com/books/v1/volumes/{id}</code>) when this page loads.
-    To update this shelf, replace the Volume IDs in the JavaScript with your own.
-  </div>
-
+  
   <div class="shelf-toolbar" id="shelf-toolbar" style="display:none;">
     <div class="shelf-info"><strong id="shelf-count"></strong> books on this shelf</div>
     <div class="view-toggle">
@@ -247,7 +239,7 @@
     '9629EAAAQBAJ',
   ];
 
-  var API_BASE  = 'https://www.googleapis.com/books/v1/volumes/';
+  var API_BASE = 'https://www.googleapis.com/books/v1/volumes/?key=AIzaSyDPgWdyzo2JAkyzDwkMOx0Hjy8RhyEF9BU&id=';
   var currentView = 'grid';
 
   function setView(v) {

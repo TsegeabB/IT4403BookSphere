@@ -196,20 +196,11 @@
 </nav>
 
 <div class="page-header">
-  <p class="eyebrow">Milestone 2 · My Bookshelf</p>
   <h1>My <span>Bookshelf</span></h1>
   <p>Books from my public Google Books bookshelf, retrieved live via the Google Books API.</p>
 </div>
 
 <main>
-
-  <div class="notice">
-    <strong>How this works:</strong> The Volume IDs below were copied from my public Google Books bookshelf.
-    Each book's full details are fetched live from the Google Books Volumes API endpoint
-    (<code>googleapis.com/books/v1/volumes/{id}</code>) when this page loads.
-    To update this shelf, replace the Volume IDs in the JavaScript with your own.
-  </div>
-
   <div class="shelf-toolbar" id="shelf-toolbar" style="display:none;">
     <div class="shelf-info"><strong id="shelf-count"></strong> books on this shelf</div>
     <div class="view-toggle">
@@ -226,15 +217,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-  /*
-   * MY BOOKSHELF — Volume IDs
-   * Replace these with the IDs of books on your own public Google Books bookshelf.
-   * To find a book's ID: go to books.google.com, open a book, and copy
-   * the value after ?id= or /books?id= in the URL.
-   *
-   * Example URL: https://books.google.com/books?id=Wfan6L9RGgYC
-   * Volume ID:   Wfan6L9RGgYC
-   */
+
   var BOOKSHELF_IDS = [
     'eTMDAQAAQBAJ',
     '3TMDAQAAQBAJ',

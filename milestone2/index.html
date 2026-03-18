@@ -516,8 +516,7 @@
         $('#loading-state').hide();
         $('#error-state').text('Failed to fetch results. Please check your connection and try again.').show();
       });
-  }
-
+  
   $('#search-btn').on('click', doSearch);
   $('#search-input').on('keydown', function(e) { if (e.key === 'Enter') doSearch(); });
 </script>

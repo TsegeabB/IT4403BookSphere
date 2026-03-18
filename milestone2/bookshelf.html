@@ -239,7 +239,7 @@
     '9629EAAAQBAJ',
   ];
 
-  var API_BASE = 'https://www.googleapis.com/books/v1/volumes/?key=AIzaSyDPgWdyzo2JAkyzDwkMOx0Hjy8RhyEF9BU&id=';
+  var API_BASE = 'https://www.googleapis.com/books/v1/volumes/';
   var currentView = 'grid';
 
   function setView(v) {
@@ -317,7 +317,7 @@
         finalize();
         return;
       }
-      $.getJSON(API_BASE + encodeURIComponent(BOOKSHELF_IDS[index]))
+      $.getJSON(API_BASE + encodeURIComponent(BOOKSHELF_IDS[index]) + '?key=AIzaSyDPgWdyzo2JAkyzDwkMOx0Hjy8RhyEF9BU')
         .done(function(data) {
           results.push(data);
           fetchNext(index + 1);

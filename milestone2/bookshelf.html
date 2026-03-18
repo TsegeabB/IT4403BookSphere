@@ -247,7 +247,7 @@
     '9629EAAAQBAJ',
   ];
 
-  var API_BASE = 'https://www.googleapis.com/books/v1/volumes/?key=AIzaSyDPgWdyzo2JAkyzDwkMOx0Hjy8RhyEF9BU&id=';
+  var API_BASE = 'https://www.googleapis.com/books/v1/volumes/';
   var currentView = 'grid';
 
   function setView(v) {
@@ -316,33 +316,39 @@
   }
 
   $(document).ready(function() {
-    var requests = BOOKSHELF_IDS.map(function(id) {
-      return $.getJSON(API_BASE + encodeURIComponent(id));
-    });
+    var results = [];
+    var failed  = 0;
 
-    var loaded = 0;
-    var failed = 0;
-
-    $.each(requests, function(i, req) {
-      req.done(function(data) {
-        renderBook(data);
-        loaded++;
-        if (loaded + failed === BOOKSHELF_IDS.length) finalize();
-      }).fail(function() {
-        failed++;
-        if (loaded + failed === BOOKSHELF_IDS.length) finalize();
-      });
-    });
+    function fetchNext(index) {
+      if (index >= BOOKSHELF_IDS.length) {
+        finalize();
+        return;
+      }
+      $.getJSON(API_BASE + encodeURIComponent(BOOKSHELF_IDS[index]))
+        .done(function(data) {
+          results.push(data);
+          fetchNext(index + 1);
+        })
+        .fail(function() {
+          failed++;
+          fetchNext(index + 1);
+        });
+    }
 
     function finalize() {
       $('#loading').hide();
-      if (loaded === 0) {
+      if (results.length === 0) {
         $('#error-msg').text('Could not load any books. Please check your connection.').show();
         return;
       }
-      $('#shelf-count').text(loaded);
+      $.each(results, function(_, data) {
+        renderBook(data);
+      });
+      $('#shelf-count').text(results.length);
       $('#shelf-toolbar').show();
     }
+
+    fetchNext(0);
   });
 </script>
 

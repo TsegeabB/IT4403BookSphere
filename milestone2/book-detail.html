@@ -204,7 +204,8 @@
 <nav>
   <a href="index.html" class="nav-brand">Book<span>Sphere</span></a>
   <div class="nav-links">
-    <a href="index.html">Home</a>
+    <a href="../index.html">Project Home</a>
+    <a href="index.html">Search</a>
     <a href="bookshelf.html">My Bookshelf</a>
   </div>
 </nav>
@@ -250,7 +251,7 @@
       return;
     }
 
-    $.getJSON('https://www.googleapis.com/books/v1/volumes/' + encodeURIComponent(bookId))
+    $.getJSON('https://www.googleapis.com/books/v1/volumes/' + encodeURIComponent(bookId) + '?key=AIzaSyDPgWdyzo2JAkyzDwkMOx0Hjy8RhyEF9BU')
       .done(function(data) {
         $('#loading').hide();
 

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Filmcircle - Movie Discovery SPA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #0f0e17; --paper: #f5f0e8; --cream: #ede7d9;
+      --rust: #b85c2c; --rust-light: #d4733f; --gold: #c9a84c;
+      --muted: #7a6f62; --border: #cfc5b4; --white: #ffffff;
+      --surface: #1a1825; --surface2: #252333;
+    }
+    body { background: var(--ink); color: var(--paper); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+    nav { background: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 56px; position: sticky; top: 0; z-index: 100; }
+    .brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 900; color: var(--paper); text-decoration: none; }
+    .brand span { color: var(--rust-light); }
+    .nav-tabs { display: flex; gap: 0.2rem; }
+    .nav-tab { background: none; border: none; color: rgba(245,240,232,0.6); font-family: inherit; font-size: 0.85rem; font-weight: 500; padding: 0.45rem 1rem; border-radius: 2px; cursor: pointer; transition: all 0.15s; }
+    .nav-tab:hover { color: var(--paper); background: rgba(255,255,255,0.06); }
+    .nav-tab.active { background: var(--rust); color: #fff; }
+
+    .hero { background: linear-gradient(180deg, var(--surface2) 0%, var(--ink) 100%); padding: 2.5rem 2rem 3rem; text-align: center; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; color: var(--paper); margin-bottom: 0.4rem; }
+    .hero h1 span { color: var(--rust-light); }
+    .hero p { color: rgba(245,240,232,0.5); font-size: 0.95rem; margin-bottom: 1.8rem; }
+    .search-bar { display: flex; max-width: 560px; margin: 0 auto; border-radius: 3px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+    .search-bar input { flex: 1; padding: 0.85rem 1.2rem; border: none; font-family: inherit; font-size: 1rem; background: var(--paper); color: var(--ink); outline: none; }
+    .search-bar input::placeholder { color: var(--muted); }
+    .search-bar button { padding: 0 1.5rem; background: var(--rust); color: #fff; border: none; font-family: inherit; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+    .search-bar button:hover { background: var(--rust-light); }
+
+    .toolbar { background: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0.7rem 2rem; display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; }
+    .toolbar-left { font-size: 0.85rem; color: rgba(245,240,232,0.55); }
+    .toolbar-left strong { color: var(--paper); }
+    .toolbar-right { display: flex; align-items: center; gap: 0.8rem; }
+    .toolbar-right label { font-size: 0.82rem; color: rgba(245,240,232,0.55); }
+    .toolbar-right select { background: var(--surface2); border: 1px solid rgba(255,255,255,0.1); color: var(--paper); border-radius: 2px; padding: 0.3rem 0.5rem; font-family: inherit; font-size: 0.82rem; }
+    .view-toggle { display: flex; gap: 0.3rem; }
+    .view-btn { background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 2px; padding: 0.3rem 0.65rem; cursor: pointer; font-size: 0.75rem; font-family: inherit; color: rgba(245,240,232,0.55); transition: all 0.15s; }
+    .view-btn.active { background: var(--rust); border-color: var(--rust); color: #fff; }
+    .view-btn:hover:not(.active) { border-color: var(--rust); color: var(--rust); }
+
+    .collection-tabs { background: var(--surface); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0.7rem 2rem; display: none; gap: 0.4rem; }
+    .col-tab { background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 2px; padding: 0.35rem 1rem; cursor: pointer; font-size: 0.82rem; font-family: inherit; color: rgba(245,240,232,0.6); transition: all 0.15s; }
+    .col-tab.active { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 500; }
+    .col-tab:hover:not(.active) { border-color: var(--gold); color: var(--gold); }
+
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    #status { text-align: center; padding: 4rem 2rem; color: rgba(245,240,232,0.4); font-size: 0.95rem; }
+
+    #grid.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.2rem; }
+    #grid.list { display: flex; flex-direction: column; gap: 0.8rem; }
+
+    .grid .card { background: var(--surface); border: 1px solid rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+    .grid .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.5); transform: translateY(-3px); }
+    .grid .card img { width: 100%; height: 220px; object-fit: cover; display: block; }
+    .grid .card .no-img { height: 220px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: rgba(245,240,232,0.3); text-align: center; padding: 0.5rem; }
+    .grid .card .info { padding: 0.75rem; flex: 1; }
+    .grid .card .title { font-family: 'Playfair Display', serif; font-size: 0.88rem; font-weight: 700; line-height: 1.3; color: var(--paper); margin-bottom: 0.2rem; }
+    .grid .card .meta { font-size: 0.72rem; color: var(--gold); }
+
+    .list .card { background: var(--surface); border: 1px solid rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; display: flex; flex-direction: row; cursor: pointer; transition: box-shadow 0.2s; }
+    .list .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .list .card img { width: 70px; min-width: 70px; height: 105px; object-fit: cover; display: block; }
+    .list .card .no-img { width: 70px; min-width: 70px; height: 105px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: rgba(245,240,232,0.3); text-align: center; padding: 0.3rem; }
+    .list .card .info { padding: 0.75rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.25rem; justify-content: center; }
+    .list .card .title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--paper); }
+    .list .card .meta { font-size: 0.78rem; color: var(--gold); }
+    .list .card .overview { font-size: 0.8rem; color: rgba(245,240,232,0.5); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    #pagination { display: flex; justify-content: center; align-items: center; gap: 0.4rem; margin-top: 2.5rem; flex-wrap: wrap; }
+    .pg-btn { min-width: 34px; height: 34px; border: 1px solid rgba(255,255,255,0.15); border-radius: 2px; background: var(--surface); color: var(--paper); font-family: inherit; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
+    .pg-btn:hover { border-color: var(--rust); color: var(--rust); }
+    .pg-btn.active { background: var(--rust); border-color: var(--rust); color: #fff; cursor: default; }
+
+    #detail-panel { display: none; margin-top: 2rem; background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; }
+    .detail-inner { display: grid; grid-template-columns: 220px 1fr; gap: 0; }
+    @media (max-width: 640px) { .detail-inner { grid-template-columns: 1fr; } }
+    .detail-poster { position: relative; }
+    .detail-poster img { width: 100%; display: block; }
+    .detail-poster .no-poster { width: 100%; aspect-ratio: 2/3; background: var(--surface2); display: flex; align-items: center; justify-content: center; color: rgba(245,240,232,0.3); font-size: 0.85rem; }
+    .detail-body { padding: 2rem; display: flex; flex-direction: column; gap: 0.8rem; }
+    .detail-close { position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.6); border: none; color: #fff; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+    .detail-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .chip { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.18rem 0.55rem; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); color: rgba(245,240,232,0.55); }
+    .detail-title { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 900; color: var(--paper); line-height: 1.1; }
+    .detail-tagline { font-family: 'Playfair Display', serif; font-style: italic; color: rgba(245,240,232,0.45); font-size: 0.95rem; }
+    .detail-rating { display: flex; align-items: center; gap: 0.5rem; }
+    .stars { color: var(--gold); font-size: 1rem; }
+    .rating-num { font-weight: 700; color: var(--paper); }
+    .rating-count { font-size: 0.78rem; color: rgba(245,240,232,0.45); }
+    .detail-overview { font-size: 0.9rem; line-height: 1.75; color: rgba(245,240,232,0.75); }
+    .detail-meta table { width: 100%; border-collapse: collapse; }
+    .detail-meta tr { border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .detail-meta tr:last-child { border-bottom: none; }
+    .detail-meta th { width: 35%; padding: 0.45rem 0.4rem 0.45rem 0; text-align: left; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(245,240,232,0.4); vertical-align: top; }
+    .detail-meta td { padding: 0.45rem 0; font-size: 0.85rem; color: var(--paper); line-height: 1.5; }
+    .detail-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .btn-action { display: inline-block; padding: 0.55rem 1.2rem; background: var(--rust); color: #fff; text-decoration: none; border-radius: 2px; font-size: 0.85rem; font-weight: 500; border: none; cursor: pointer; transition: background 0.15s; }
+    .btn-action:hover { background: var(--rust-light); }
+    .btn-outline { background: none; border: 1px solid rgba(255,255,255,0.2); color: var(--paper); }
+    .btn-outline:hover { border-color: var(--rust); color: var(--rust); background: none; }
+
+    .spinner-wrap { text-align: center; padding: 3rem; color: rgba(245,240,232,0.4); }
+    .spinner { display: inline-block; width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--rust); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <script id="tpl-grid-card" type="x-tmpl-mustache">
+    <div class="card" data-id="{{id}}" data-type="{{type}}">
+      {{#poster}}<img src="https://image.tmdb.org/t/p/w300{{poster}}" alt="{{title}}" loading="lazy"/>{{/poster}}
+      {{^poster}}<div class="no-img">No Image</div>{{/poster}}
+      <div class="info">
+        <div class="title">{{title}}</div>
+        <div class="meta">{{#rating}}{{rating}} / 10{{/rating}}{{^rating}}No rating{{/rating}} &nbsp;|&nbsp; {{year}}</div>
+      </div>
+    </div>
+  </script>
+
+  <script id="tpl-list-card" type="x-tmpl-mustache">
+    <div class="card" data-id="{{id}}" data-type="{{type}}">
+      {{#poster}}<img src="https://image.tmdb.org/t/p/w154{{poster}}" alt="{{title}}" loading="lazy"/>{{/poster}}
+      {{^poster}}<div class="no-img">No Image</div>{{/poster}}
+      <div class="info">
+        <div class="title">{{title}}</div>
+        <div class="meta">{{#rating}}{{rating}} / 10{{/rating}}{{^rating}}No rating{{/rating}} &nbsp;|&nbsp; {{year}}</div>
+        {{#overview}}<div class="overview">{{overview}}</div>{{/overview}}
+      </div>
+    </div>
+  </script>
+
+  <script id="tpl-detail" type="x-tmpl-mustache">
+    <div class="detail-inner">
+      <div class="detail-poster">
+        {{#poster}}<img src="https://image.tmdb.org/t/p/w400{{poster}}" alt="{{title}}"/>{{/poster}}
+        {{^poster}}<div class="no-poster">No Image</div>{{/poster}}
+        <button class="detail-close" id="close-detail">x</button>
+      </div>
+      <div class="detail-body">
+        <div class="detail-chips">
+          {{#language}}<span class="chip">{{language}}</span>{{/language}}
+          {{#status}}<span class="chip">{{status}}</span>{{/status}}
+          {{#adult}}<span class="chip">Adult</span>{{/adult}}
+        </div>
+        <h2 class="detail-title">{{title}}</h2>
+        {{#tagline}}<p class="detail-tagline">{{tagline}}</p>{{/tagline}}
+        {{#rating}}
+        <div class="detail-rating">
+          <span class="stars">{{stars}}</span>
+          <span class="rating-num">{{rating}}</span>
+          <span class="rating-count">/ 10 ({{votes}} votes)</span>
+        </div>
+        {{/rating}}
+        {{#overview}}<p class="detail-overview">{{overview}}</p>{{/overview}}
+        <div class="detail-meta">
+          <table>
+            {{#year}}<tr><th>Released</th><td>{{year}}</td></tr>{{/year}}
+            {{#runtime}}<tr><th>Runtime</th><td>{{runtime}} min</td></tr>{{/runtime}}
+            {{#genres}}<tr><th>Genres</th><td>{{genres}}</td></tr>{{/genres}}
+            {{#budget}}<tr><th>Budget</th><td>{{budget}}</td></tr>{{/budget}}
+            {{#revenue}}<tr><th>Revenue</th><td>{{revenue}}</td></tr>{{/revenue}}
+            {{#production}}<tr><th>Production</th><td>{{production}}</td></tr>{{/production}}
+          </table>
+        </div>
+        <div class="detail-actions">
+          {{#homepage}}<a href="{{homepage}}" target="_blank" class="btn-action">Official Site</a>{{/homepage}}
+          <a href="https://www.themoviedb.org/movie/{{id}}" target="_blank" class="btn-action btn-outline">TMDB Page</a>
+        </div>
+      </div>
+    </div>
+  </script>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="brand">Filmcircle</span></a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-view="search">Search</button>
+    <button class="nav-tab" data-view="collection">Collection</button>
+  </div>
+</nav>
+
+<div class="hero" id="search-hero">
+  <h1>Find millions of <span>amazing movies</span></h1>
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search by title, actor, or keyword..." autocomplete="off"/>
+    <button id="search-btn">Search</button>
+  </div>
+</div>
+
+<div class="toolbar" id="toolbar">
+  <div class="toolbar-left">
+    Results for <strong id="query-label"></strong> &mdash; <span id="count-label"></span>
+  </div>
+  <div class="toolbar-right">
+    <label for="page-select">Page:</label>
+    <select id="page-select"></select>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btn-grid">Grid</button>
+      <button class="view-btn" id="btn-list">List</button>
+    </div>
+  </div>
+</div>
+
+<div class="collection-tabs" id="collection-tabs">
+  <button class="col-tab active" data-col="popular">Popular</button>
+  <button class="col-tab" data-col="top_rated">Top Rated</button>
+  <button class="col-tab" data-col="now_playing">Now Playing</button>
+  <button class="col-tab" data-col="upcoming">Upcoming</button>
+</div>
+
+<main>
+  <div id="status">Enter a search term above to discover movies.</div>
+  <div id="grid" class="grid"></div>
+  <div id="pagination"></div>
+  <div id="detail-panel"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mustache@4/mustache.js"></script>
+<script>
+var TMDB_KEY = 'aa6734f5c8e6e64489f582fbea74bafc';
+var API = 'https://api.themoviedb.org/3';
+var PER_PAGE = 12;
+var allItems = [];
+var currentPage = 1;
+var currentView = 'grid';
+var currentMode = 'search';
+var currentCollection = 'popular';
+var collectionData = {};
+
+function apiHeaders() {
+  return {};
+}
+
+function starsHtml(rating) {
+  var filled = Math.round(rating / 2);
+  var s = '';
+  for (var i = 0; i < 5; i++) s += i < filled ? '\u2605' : '\u2606';
+  return s;
+}
+
+function formatMoney(n) {
+  if (!n || n === 0) return null;
+  return '$' + n.toLocaleString();
+}
+
+function movieToView(m) {
+  return {
+    id:       m.id,
+    type:     'movie',
+    title:    m.title || m.name || 'Untitled',
+    poster:   m.poster_path || null,
+    rating:   m.vote_average ? m.vote_average.toFixed(1) : null,
+    year:     m.release_date ? m.release_date.substring(0, 4) : (m.first_air_date ? m.first_air_date.substring(0, 4) : ''),
+    overview: m.overview || ''
+  };
+}
+
+function renderGrid() {
+  var slice = allItems.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  var $g = $('#grid').empty().removeClass('grid list').addClass(currentView);
+  var tpl = currentView === 'grid' ? $('#tpl-grid-card').html() : $('#tpl-list-card').html();
+  for (var i = 0; i < slice.length; i++) {
+    $g.append(Mustache.render(tpl, slice[i]));
+  }
+  buildPagination();
+  if ($('#page-select').length) $('#page-select').val(currentPage);
+}
+
+function buildPagination() {
+  var total = Math.ceil(allItems.length / PER_PAGE);
+  var $p = $('#pagination').empty();
+  if (total <= 1) return;
+  for (var i = 1; i <= total; i++) {
+    var btn = $('<button class="pg-btn">').text(i);
+    if (i === currentPage) btn.addClass('active');
+    else btn.data('n', i).on('click', function() { currentPage = $(this).data('n'); renderGrid(); window.scrollTo(0,0); });
+    $p.append(btn);
+  }
+}
+
+function buildPageSelect(count) {
+  var $s = $('#page-select').empty();
+  var pages = Math.ceil(count / PER_PAGE);
+  for (var i = 1; i <= pages; i++) $s.append('<option value="' + i + '">' + i + '</option>');
+}
+
+function showDetail(id) {
+  $('#detail-panel').html('<div class="spinner-wrap"><div class="spinner"></div><br>Loading...</div>').show();
+  $('html,body').animate({ scrollTop: $('#detail-panel').offset().top - 70 }, 300);
+  $.ajax({
+    url: API + '/movie/' + id,
+    data: { api_key: TMDB_KEY },
+    success: function(m) {
+      var data = {
+        id:         m.id,
+        title:      m.title || 'Untitled',
+        poster:     m.poster_path || null,
+        tagline:    m.tagline || null,
+        rating:     m.vote_average ? m.vote_average.toFixed(1) : null,
+        stars:      m.vote_average ? starsHtml(m.vote_average) : '',
+        votes:      m.vote_count ? m.vote_count.toLocaleString() : '0',
+        overview:   m.overview || null,
+        year:       m.release_date ? m.release_date : null,
+        runtime:    m.runtime || null,
+        language:   m.original_language ? m.original_language.toUpperCase() : null,
+        status:     m.status || null,
+        adult:      m.adult || false,
+        genres:     m.genres ? m.genres.map(function(g){ return g.name; }).join(', ') : null,
+        budget:     formatMoney(m.budget),
+        revenue:    formatMoney(m.revenue),
+        production: m.production_companies ? m.production_companies.slice(0,2).map(function(c){ return c.name; }).join(', ') : null,
+        homepage:   m.homepage || null
+      };
+      var html = Mustache.render($('#tpl-detail').html(), data);
+      $('#detail-panel').html(html);
+      $('#close-detail').on('click', function() { $('#detail-panel').hide().empty(); });
+    },
+    error: function() {
+      $('#detail-panel').html('<p style="padding:2rem;color:#c0392b;">Failed to load movie details.</p>');
+    }
+  });
+}
+
+function doSearch() {
+  var q = $.trim($('#search-input').val());
+  if (!q) return;
+  $('#status').html('<div class="spinner-wrap"><div class="spinner"></div><br>Searching...</div>').show();
+  $('#grid').empty();
+  $('#pagination').empty();
+  $('#toolbar').hide();
+  $('#detail-panel').hide().empty();
+  allItems = [];
+  currentPage = 1;
+  $.ajax({
+    url: API + '/search/movie',
+    headers: apiHeaders(),
+    data: { api_key: TMDB_KEY, query: q, page: 1, include_adult: false },
+    success: function(data) {
+      var p1 = (data.results || []).map(movieToView);
+      $.ajax({
+        url: API + '/search/movie',
+        headers: apiHeaders(),
+        data: { api_key: TMDB_KEY, query: q, page: 2, include_adult: false },
+        success: function(data2) {
+          allItems = p1.concat((data2.results || []).map(movieToView));
+          showSearchResults(q, data.total_results || allItems.length);
+        },
+        error: function() {
+          allItems = p1;
+          showSearchResults(q, data.total_results || allItems.length);
+        }
+      });
+    },
+    error: function() {
+      $('#status').text('Search failed. Please check your connection.');
+    }
+  });
+}
+
+function showSearchResults(q, total) {
+  if (allItems.length === 0) { $('#status').text('No results found for "' + q + '".'); return; }
+  $('#status').hide();
+  $('#query-label').text('"' + q + '"');
+  $('#count-label').text(Math.min(allItems.length, 60) + ' of ' + total.toLocaleString() + ' results');
+  allItems = allItems.slice(0, 60);
+  buildPageSelect(allItems.length);
+  $('#toolbar').css('display', 'flex');
+  renderGrid();
+}
+
+function loadCollection(type) {
+  currentCollection = type;
+  currentPage = 1;
+  allItems = [];
+  $('#grid').empty();
+  $('#pagination').empty();
+  $('#detail-panel').hide().empty();
+  $('#status').html('<div class="spinner-wrap"><div class="spinner"></div><br>Loading...</div>').show();
+  if (collectionData[type]) {
+    allItems = collectionData[type];
+    $('#status').hide();
+    $('#toolbar').hide();
+    renderGrid();
+    return;
+  }
+  $.ajax({
+    url: API + '/movie/' + type,
+    headers: apiHeaders(),
+    data: { api_key: TMDB_KEY, page: 1 },
+    success: function(data) {
+      var p1 = (data.results || []).map(movieToView);
+      $.ajax({
+        url: API + '/movie/' + type,
+        headers: apiHeaders(),
+        data: { api_key: TMDB_KEY, page: 2 },
+        success: function(data2) {
+          allItems = p1.concat((data2.results || []).map(movieToView));
+          collectionData[type] = allItems;
+          $('#status').hide();
+          $('#toolbar').hide();
+          renderGrid();
+        },
+        error: function() {
+          allItems = p1;
+          collectionData[type] = allItems;
+          $('#status').hide();
+          $('#toolbar').hide();
+          renderGrid();
+        }
+      });
+    },
+    error: function() { $('#status').text('Failed to load collection.'); }
+  });
+}
+
+function switchView(view) {
+  currentView = view;
+  currentPage = 1;
+  $('#btn-grid, #btn-list').removeClass('active');
+  if (view === 'grid') $('#btn-grid').addClass('active');
+  else $('#btn-list').addClass('active');
+  renderGrid();
+}
+
+// NAV TABS
+$('.nav-tab').on('click', function() {
+  var v = $(this).data('view');
+  currentMode = v;
+  $('.nav-tab').removeClass('active');
+  $(this).addClass('active');
+  if (v === 'search') {
+    $('#search-hero').show();
+    $('#collection-tabs').hide();
+    $('#toolbar').hide();
+    allItems = [];
+    $('#grid').empty();
+    $('#pagination').empty();
+    $('#detail-panel').hide().empty();
+    $('#status').text('Enter a search term above to discover movies.');
+  } else {
+    $('#search-hero').hide();
+    $('#collection-tabs').css('display', 'flex');
+    loadCollection(currentCollection);
+  }
+});
+
+$('.col-tab').on('click', function() {
+  $('.col-tab').removeClass('active');
+  $(this).addClass('active');
+  loadCollection($(this).data('col'));
+});
+
+$('#btn-grid').on('click', function() { switchView('grid'); });
+$('#btn-list').on('click', function() { switchView('list'); });
+
+$('#page-select').on('change', function() { currentPage = parseInt($(this).val()); renderGrid(); window.scrollTo(0,0); });
+
+$(document).on('click', '.card', function() {
+  var id = $(this).data('id');
+  showDetail(id);
+});
+
+$('#search-btn').on('click', function() { doSearch(); });
+$('#search-input').on('keydown', function(e) { if (e.which === 13) doSearch(); });
+</script>
+
+</body>
+</html>
